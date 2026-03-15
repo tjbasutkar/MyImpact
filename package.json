@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "release:feature": "npm version minor --no-git-tag-version",
+    "release:patch": "npm version patch --no-git-tag-version"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.99.1",

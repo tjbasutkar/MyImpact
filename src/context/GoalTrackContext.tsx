@@ -67,8 +67,9 @@ export const GoalTrackProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const loadData = async () => {
-    if (!user) return;
+  const loadData = async (userId?: string) => {
+    const currentUserId = userId ?? user?.id;
+    if (!currentUserId) return;
 
     const [goalsRes, achievementsRes] = await Promise.all([
       supabase
@@ -105,8 +106,9 @@ export const GoalTrackProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const session = data?.session;
 
       if (session?.user) {
-        setUser(mapSupabaseUser(session.user));
-        await loadData();
+        const mappedUser = mapSupabaseUser(session.user);
+        setUser(mappedUser);
+        await loadData(mappedUser.id);
       }
 
       setLoading(false);
@@ -116,8 +118,9 @@ export const GoalTrackProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        setUser(mapSupabaseUser(session.user));
-        await loadData();
+        const mappedUser = mapSupabaseUser(session.user);
+        setUser(mappedUser);
+        await loadData(mappedUser.id);
       } else {
         setUser(null);
         setGoals([]);
@@ -139,8 +142,9 @@ export const GoalTrackProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     if (error) throw error;
     if (!data.user) throw new Error('Failed to sign in');
 
-    setUser(mapSupabaseUser(data.user));
-    await loadData();
+    const mappedUser = mapSupabaseUser(data.user);
+    setUser(mappedUser);
+    await loadData(mappedUser.id);
   };
 
   const signUp = async (email: string, password: string, name: string, role: User['role']) => {
@@ -156,10 +160,15 @@ export const GoalTrackProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     });
 
     if (error) throw error;
-    if (data.user) {
-      setUser(mapSupabaseUser(data.user));
-      await loadData();
+
+    // If email confirmation is enabled in Supabase, signUp may return a user but no session.
+    if (!data.session?.user) {
+      throw new Error('Account created. Please confirm your email, then sign in.');
     }
+
+    const mappedUser = mapSupabaseUser(data.session.user);
+    setUser(mappedUser);
+    await loadData(mappedUser.id);
   };
 
   const signOut = async () => {

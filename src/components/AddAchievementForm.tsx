@@ -15,24 +15,35 @@ export const AddAchievementForm: React.FC<AddAchievementFormProps> = ({ goals, o
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [goalId, setGoalId] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
 
-    addAchievement({
-      title: title.trim(),
-      description: description.trim(),
-      date: new Date(date),
-      goalId: goalId || undefined,
-    });
+    setSubmitting(true);
+    setError('');
 
-    // Reset form
-    setTitle('');
-    setDescription('');
-    setDate(new Date().toISOString().split('T')[0]);
-    setGoalId('');
-    onClose?.();
+    try {
+      await addAchievement({
+        title: title.trim(),
+        description: description.trim(),
+        date: new Date(date),
+        goalId: goalId || undefined,
+      });
+
+      // Reset form only after successful insert.
+      setTitle('');
+      setDescription('');
+      setDate(new Date().toISOString().split('T')[0]);
+      setGoalId('');
+      onClose?.();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add achievement');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -94,12 +105,17 @@ export const AddAchievementForm: React.FC<AddAchievementFormProps> = ({ goals, o
         </div>
       </div>
 
+      {error && (
+        <p className="mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>
+      )}
+
       <div className="flex flex-col sm:flex-row gap-2 mt-6">
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 order-1 sm:order-1"
+          disabled={submitting}
+          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 order-1 sm:order-1 disabled:opacity-60"
         >
-          Add Achievement
+          {submitting ? 'Saving...' : 'Add Achievement'}
         </button>
         {onClose && (
           <button
