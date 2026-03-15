@@ -12,7 +12,7 @@ import { Analytics } from './Analytics';
 type Tab = 'dashboard' | 'achievements' | 'goals' | 'analytics';
 
 export const Dashboard: React.FC = () => {
-  const { achievements, goals, deleteAchievement, deleteGoal } = useGoalTrack();
+  const { user, achievements, goals, deleteAchievement, deleteGoal, signOut, assignGoalToUsers } = useGoalTrack();
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [showAddAchievement, setShowAddAchievement] = useState(false);
   const [showAddGoal, setShowAddGoal] = useState(false);
@@ -40,12 +40,14 @@ export const Dashboard: React.FC = () => {
                 >
                   Add Achievement
                 </button>
-                <button
-                  onClick={() => setShowAddGoal(true)}
-                  className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-center"
-                >
-                  Add Goal
-                </button>
+                {(user?.role === 'admin' || user?.role === 'manager') && (
+                  <button
+                    onClick={() => setShowAddGoal(true)}
+                    className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-center"
+                  >
+                    Add Goal
+                  </button>
+                )}
               </div>
             </div>
 
@@ -78,6 +80,7 @@ export const Dashboard: React.FC = () => {
                         key={goal.id}
                         goal={goal}
                         achievementCount={goal.achievementCount}
+                        showAssignment={user?.role === 'admin' || user?.role === 'manager'}
                       />
                     ))}
                   </div>
@@ -112,12 +115,14 @@ export const Dashboard: React.FC = () => {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Goals</h2>
-              <button
-                onClick={() => setShowAddGoal(true)}
-                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 w-full sm:w-auto text-center"
-              >
-                Add Goal
-              </button>
+              {(user?.role === 'admin' || user?.role === 'manager') && (
+                <button
+                  onClick={() => setShowAddGoal(true)}
+                  className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 w-full sm:w-auto text-center"
+                >
+                  Add Goal
+                </button>
+              )}
             </div>
             {goalsWithCounts.length === 0 ? (
               <p className="text-gray-500 dark:text-gray-400">No goals set yet.</p>
@@ -129,6 +134,7 @@ export const Dashboard: React.FC = () => {
                     goal={goal}
                     achievementCount={goal.achievementCount}
                     onDelete={deleteGoal}
+                    showAssignment={user?.role === 'admin' || user?.role === 'manager'}
                   />
                 ))}
               </div>
@@ -153,8 +159,20 @@ export const Dashboard: React.FC = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-4 sm:py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <header className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">GoalTrack</h1>
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Track your achievements and progress towards your goals</p>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">GoalTrack</h1>
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
+                Welcome back, {user?.name || user?.email}! ({user?.role})
+              </p>
+            </div>
+            <button
+              onClick={signOut}
+              className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 text-sm"
+            >
+              Sign Out
+            </button>
+          </div>
         </header>
 
         <nav className="mb-8">

@@ -1,21 +1,24 @@
 'use client';
 
 import { Goal } from '../lib/types';
+import { useGoalTrack } from '../context/GoalTrackContext';
 
 interface GoalCardProps {
   goal: Goal;
   achievementCount: number;
   onDelete?: (id: string) => void;
+  showAssignment?: boolean;
 }
 
-export const GoalCard: React.FC<GoalCardProps> = ({ goal, achievementCount, onDelete }) => {
+export const GoalCard: React.FC<GoalCardProps> = ({ goal, achievementCount, onDelete, showAssignment = false }) => {
+  const { user } = useGoalTrack();
   return (
     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border">
       <div className="flex justify-between items-start">
         <div className="flex-1">
         <h3 className="font-semibold text-base sm:text-lg text-gray-900 dark:text-white">{goal.title}</h3>
         <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mt-1">{goal.description}</p>
-          <div className="flex items-center gap-2 mt-2 text-sm">
+          <div className="flex flex-wrap items-center gap-2 mt-2 text-sm">
             <span className={`px-2 py-1 rounded text-xs font-medium ${
               goal.category === 'personal' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
               goal.category === 'organizational' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
@@ -26,12 +29,17 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, achievementCount, onDe
             <span className="text-gray-500 dark:text-gray-400">
               {achievementCount} achievement{achievementCount !== 1 ? 's' : ''}
             </span>
+            {showAssignment && goal.assignedTo && goal.assignedTo.length > 0 && (
+              <span className="text-blue-600 dark:text-blue-400 text-xs">
+                Assigned to {goal.assignedTo.length} user{goal.assignedTo.length !== 1 ? 's' : ''}
+              </span>
+            )}
           </div>
         </div>
-        {onDelete && (
+        {onDelete && (user?.role === 'admin' || user?.role === 'manager' || user?.id === goal.createdBy) && (
           <button
             onClick={() => onDelete(goal.id)}
-            className="text-red-500 hover:text-red-700 ml-2"
+            className="text-red-500 hover:text-red-700 ml-2 flex-shrink-0"
           >
             ✕
           </button>
