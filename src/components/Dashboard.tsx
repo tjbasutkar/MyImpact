@@ -161,7 +161,7 @@ export const Dashboard: React.FC = () => {
         <header className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">GoalTrack</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">MyImpact</h1>
               <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
                 Welcome back, {user?.name || user?.email}! ({user?.role})
               </p>
