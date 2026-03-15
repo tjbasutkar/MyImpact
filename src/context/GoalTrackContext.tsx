@@ -97,21 +97,25 @@ export const GoalTrackProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   useEffect(() => {
     const init = async () => {
-      setLoading(true);
-      const { data, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error('Supabase auth session error:', error);
+      try {
+        setLoading(true);
+        const { data, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Supabase auth session error:', error);
+        }
+
+        const session = data?.session;
+
+        if (session?.user) {
+          const mappedUser = mapSupabaseUser(session.user);
+          setUser(mappedUser);
+          await loadData(mappedUser.id);
+        }
+      } catch (err) {
+        console.error('Failed to initialize session:', err);
+      } finally {
+        setLoading(false);
       }
-
-      const session = data?.session;
-
-      if (session?.user) {
-        const mappedUser = mapSupabaseUser(session.user);
-        setUser(mappedUser);
-        await loadData(mappedUser.id);
-      }
-
-      setLoading(false);
     };
 
     init();
